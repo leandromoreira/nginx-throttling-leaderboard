@@ -8,8 +8,8 @@ leaderboard.hit = function(redis_client, token)
   local current_key = key_prefix .. math_floor((ngx_now() / 60) % 60)
 
   redis_client:init_pipeline()
+  redis_client:expire(current_key, 60)
   redis_client:zincrby(current_key, 1, token)
-  redis_client:expire(current_key, 2 * 60, "NX")
 
   local resp, err = redis_client:commit_pipeline()
   if err then
