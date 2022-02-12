@@ -1,0 +1,18 @@
+version: '2.1'
+
+services:
+  nginx:
+    image: openresty/openresty
+    volumes:
+      - "./nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf"
+      - "./src/:/lua/src/"
+    depends_on:
+      - redis
+    links:
+      - redis
+    ports:
+      - "8080:8080"
+
+  redis:
+    image: redis:latest
+
