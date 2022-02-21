@@ -55,7 +55,48 @@ controller.token_hit = function()
   end
 end
 
+
+local route = function(conf)
+  local method = string.lower(ngx.req.get_method())
+
+  for key, value in pairs(conf) do
+    if type(key) ~= "string" or type(value) ~= "table" then
+      ngx.log(ngx.ERR, "the config values must be a string and a table not " .. type(key) .. " and " .. type(value))
+      goto continue
+    end
+
+    if ngx.re.find(ngx.var.uri, key) then
+
+      if value[method] ~= nil then
+        local m, err = ngx.re.match(ngx.var.uri, key)
+        if err ~= nil then
+          ngx.log(ngx.ERR, "the route config values must be a valid regex string err=" .. err)
+          goto continue
+        end
+
+        if type(m) == "table" then
+          value[method](unpack(m))
+        else
+          value[method]()
+        end
+      end
+    end
+
+    ::continue::
+  end
+end
+
 controller.render_top_used_tokens = function()
+ route {
+   ["^/tokens$"] = {
+     get = function() ngx.log(ngx.ERR, "getting all tokens") end
+   },
+   ["^/tokens/([\\w\\d-]+)/([\\w\\d-]+)$"] = {
+     get = function(token, id) ngx.log(ngx.ERR, "getting individual token " .. token .. " id " .. id) end,
+     post = function(token, id) ngx.log(ngx.ERR, "posting individual token " .. token .. " id " .. id) end
+   }
+ }
+
   local redis_client, err = controller.start_redis_client()
   if err ~= nil then
     ngx.log(ngx.ERR, err)

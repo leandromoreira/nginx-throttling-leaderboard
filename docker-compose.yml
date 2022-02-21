@@ -2,7 +2,8 @@ version: '2.1'
 
 services:
   nginx:
-    image: openresty/openresty
+    build:
+      context: .
     volumes:
       - "./nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf"
       - "./src/:/lua/src/"
